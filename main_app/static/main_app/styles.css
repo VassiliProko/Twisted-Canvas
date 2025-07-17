@@ -51,7 +51,7 @@ body, html {
     background-color: var(--color-base-2);
     border: none;
     margin: 0;
-    padding: var(--padding-md);
+    padding: var(--padding-sm);
     border-radius: var(--border-radius-sm);
     display: flex;
     align-items: center;
@@ -203,12 +203,12 @@ nav .btn {
     position: absolute;
 }
 
-.share {
+.export-toggle {
     background-color: var(--color-alternative);
     color: var(--color-light);
 }
 
-.share:hover {
+.export-toggle:hover {
     background-color: var(--color-alternative-hover);
 }
 
@@ -394,7 +394,8 @@ nav .btn {
 /* drawing tools */
 .tool-wrapper {
     margin-left: var(--padding-md);
-    margin-top: var(--padding-lg);
+    margin-right: var(--padding-md);
+    margin-top: var(--padding-sm);
     display: flex;
     flex-direction: column;
     gap: var(--padding-md);
@@ -404,6 +405,7 @@ nav .btn {
     touch-action: none;
     z-index: 10;
     pointer-events: none;
+    width: calc(100% - (var(--padding-md) * 2));
 }
 
 .tools {
@@ -415,10 +417,6 @@ nav .btn {
     background-color: var(--color-base-2);
     border-radius: var(--border-radius-md);
     pointer-events: auto;
-}
-
-.tools .btn {
-    padding: var(--padding-sm);
 }
 
 .color-picker-wrapper {
@@ -477,4 +475,13 @@ nav .btn {
 /* prevents vertical scrolling */
 body.canvas-view {
 	overflow: hidden;
+}
+
+
+/* undo redo button */
+.undo-redo-wrapper {
+    display: flex;
+    gap: var(--padding-sm);
+    margin-left: auto;
+    pointer-events: auto;
 }

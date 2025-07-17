@@ -6,10 +6,13 @@ Twisted Drawing Web Application | CS50 Capstone Project
 ![Twisted Canvas Preview](preview.jpg)
 
 ## Overview
+Twisted Canvas is a dynamic web-based drawing application that challenges artists with various "twists" every 15 seconds. These twists include grayscale filters, horizontal or vertical flips, and canvas rotations which introduce playful chaos into the creative process. By forcing users to adapt their style in real time, Twisted Canvas turns drawing into a fun (or not), unique gamified experience that promotes creativity and spontaneity.
+
+Drawings are automatically saved as image files through a lightweight SQLite3 backend, ensuring progress is never lost. Designed to be fully responsive, the app functions smoothly across all modern screen sizes, offering an engaging experience on both desktop and mobile devices.
 
 ## Distinctiveness and Complexity
 
-## Repository Files
+## File Structure
 
 ## How to Run
 

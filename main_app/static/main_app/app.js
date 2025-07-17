@@ -23,6 +23,7 @@ function loadCanvasImage(dataURL) {
 loadCanvasImage(savedDataURL);
 
 
+
 let currentTool = "draw";  // default tool
 
 function setActiveButton(activeBtn) {
@@ -71,6 +72,7 @@ function saveState() {
     }
     undoStack.push(canvas.toDataURL());
     redoStack = []; // clear redo on new action
+    console.log("Saved state. Undo stack size:", undoStack.length);
 }
 
 function undo() {
@@ -100,6 +102,38 @@ function restoreState(dataURL) {
     img.src = dataURL;
 }
 
+// undo redo buttons
+document.querySelector('.undo-button').addEventListener('click', undo);
+document.querySelector('.redo-button').addEventListener('click', redo);
+
+// keyboard shortcuts
+document.addEventListener('keydown', (e) => {
+    // Ctrl+Z or Cmd+Z
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
+        e.preventDefault(); // prevent browser undo
+        undo();
+    }
+
+    // Ctrl+Shift+Z or Cmd+Shift+Z || Cltr+Y or Cmd+Y
+    if ((e.ctrlKey || e.metaKey) && (e.shiftKey && e.key.toLowerCase() === 'z' || e.key.toLowerCase() === 'y')) {
+        e.preventDefault();
+        redo();
+    }
+
+     // E for eraser
+    if (e.key.toLowerCase() === 'e') {
+        e.preventDefault();
+        setActiveButton(eraseBtn);
+        currentTool = "erase";
+    }
+
+    // B for brush
+    if (e.key.toLowerCase() === 'b') {
+        e.preventDefault();
+        setActiveButton(drawBtn);
+        currentTool = "draw";
+    }
+});
 
 
 let drawing = false;

@@ -6,13 +6,28 @@
 {% block body_class %}canvas-view{% endblock %}
 
 {% block top_right_button %}
-    <div class="share btn">
-        <p>Share</p>
+    <div class="export-toggle btn">
+        <p>Export</p>
     </div>
 {% endblock %}
 
 {% block content %}
     <div class="tool-wrapper">
+        <div class="row">
+            <p>twist</p>
+            <div class="undo-redo-wrapper">
+                <button class="btn undo-button">
+                    <span class="material-symbols-outlined">
+                        undo
+                    </span>
+                </button>
+                <button class="btn redo-button">
+                    <span class="material-symbols-outlined">
+                        redo
+                    </span>
+                </button>
+            </div>
+        </div>
         <div class="tools">
             <button id="draw-btn" aria-label="Draw mode" class="btn btn-active">
                 <span class="material-symbols-outlined">
