@@ -1,0 +1,39 @@
+{% extends "main_app/layout.html" %}
+
+{% block content %}
+    <div class="col content-wrapper">
+        <div class="text-wrapper">
+            <div class="form-wrapper">
+               <h1>Register</h1>
+
+                {% if message %}
+                    <div class="form-message">{{ message }}</div>
+                {% endif %}
+
+                <form action="{% url 'register' %}" method="post" class="form">
+                    {% csrf_token %}
+                    <div class="form-inputs">
+                        <div class="form-group">
+                            <p>Username</p>
+                            <input autofocus type="text" name="username" placeholder="Username">
+                        </div>
+                        <div class="form-group">
+                            <p>Email</p>
+                            <input type="email" name="email" placeholder="Email Address">
+                        </div>
+                        <div class="form-group">
+                            <p>Password</p>
+                            <input type="password" name="password" placeholder="Password">
+                        </div>
+                        <div class="form-group">
+                            <p>Password</p>
+                            <input type="password" name="confirmation" placeholder="Confirm Password">
+                        </div>
+                    </div>
+                    <input class="btn btn-primary" type="submit" value="Register">
+                </form>
+            </div>
+            <span>Already have an account? <a href="{% url 'login' %}">Log In here.</a></span>
+        </div>
+    </div>
+{% endblock %}

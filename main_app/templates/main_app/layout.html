@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>{% block title %}Twisted Canvas{% endblock %}</title>
+    {% load static %}
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/themes/nano.min.css"/>
+    <link rel="stylesheet" href="{% static 'main_app/styles.css' %}">
+    <link rel="icon" type="image/x-icon" href="{% static 'main_app/favicon.png' %}">
+</head>
+<body class="{% block body_class %}{% endblock %}">
+    <header>
+        <nav>
+            <a href="{% url 'home' %}" class="btn">
+                <span class="material-symbols-outlined">
+                    home
+                </span>
+                Home
+            </a>
+            <span class="header-title">
+                {% block header_title %}{% endblock %}
+            </span>
+            {% if user.is_authenticated %}
+                {% block top_right_button %}{% endblock %}
+                <!-- <div class="settings btn">
+                    <div class="pfp">{{ user.username|slice:":1" }}</div>
+                    <span class="material-symbols-outlined">
+                        keyboard_arrow_down
+                    </span>
+                </div> -->
+                <!-- <div class="share btn">
+                    <p>Share</p>
+                </div> -->
+            {% endif %}
+        </nav>
+    </header>
+
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+</body>
+</html>

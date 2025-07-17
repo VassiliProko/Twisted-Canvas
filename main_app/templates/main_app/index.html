@@ -1,0 +1,212 @@
+{% extends "main_app/layout.html" %}
+
+{% block top_right_button %}
+    <div class="settings btn">
+        <div class="pfp">{{ user.username|slice:":1" }}</div>
+        <span class="material-symbols-outlined">
+            keyboard_arrow_down
+        </span>
+    </div>
+{% endblock %}
+
+{% block content %}
+    {% if user.is_authenticated %}
+        <div class="row">
+            <div class="element-wrapper">
+            <button id="toggle-canvas-form" class="btn btn-short">
+                New Drawing
+                <span class="material-symbols-outlined toggle-add-icon">
+                    add
+                </span>
+            </button>
+            <a href="{% url 'logout' %}" class="btn btn-short" style="margin-left: auto;">
+                Logout
+            </a>
+            </div>
+        </div>
+        <div id="canvas-form-overlay" class="canvas-form-overlay hidden">
+            <div class="form-wrapper">
+                {% if message %}
+                    <div class="form-message">{{ message }}</div>
+                {% endif %}
+                <form action="{% url 'create_art' %}" method="POST" class="form" novalidate>
+                    {% csrf_token %}
+                    <div class="form-inputs">
+                        <div class="form-group">
+                            <p>Drawing Name</p>
+                            <input type="text" name="title" placeholder="Untitled drawing" maxlength="20">
+                        </div>
+                        <div class="form-group">
+                            <p>Width</p>
+                            <input type="number" name="width" placeholder="64" min="1" max="512" required class="new-drawing-input">
+                        </div>
+                        <div class="form-group">
+                            <p>Height</p>
+                            <input type="number" name="height" placeholder="64" min="1" max="512" required class="new-drawing-input">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-primary">Create New Drawing</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="element-wrapper">
+                <div class="drawings-grid">
+                    {% for drawing in drawings %}
+                        <div class="drawing-overview">
+                            <a href="{% url 'canvas_view' drawing.id %}">
+                                <img src="{{ drawing.data }}" alt="{{ drawing.title }} preview">
+                            </a>
+                            <div class="row">
+                                <div class="overview-wrapper">
+                                    <p>{{ drawing.title }}</p>
+                                    <p class="muted">{{ drawing.width }} × {{ drawing.height }} px</p>
+                                </div>
+                                <div class="dots-button-wrapper">
+                                    <span class="material-symbols-outlined drawing-overview-toggle btn" data-id="{{ drawing.id }}">
+                                        more_horiz
+                                    </span>
+                                    <!-- Hidden rename and delete popup -->
+                                    <div class="drawing-popup hidden" id="popup-actions-{{ drawing.id }}">
+                                        <button class="trigger-rename btn btn-short sm-left-padding width-100" data-id="{{ drawing.id }}" style="margin-bottom: 0.5rem;">Rename</button>
+                                        <form action="{% url 'delete_art' drawing.id %}" method="POST" onsubmit="return confirm('Are you sure?');" class="form popup-delete-form">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-short sm-left-padding">Delete</button>
+                                        </form>
+                                    </div>
+                                    <!-- Hidden rename form -->
+                                    <div class="drawing-popup drawing-rename-popup hidden" id="popup-rename-{{ drawing.id }}">
+                                        <form action="{% url 'rename_art' drawing.id %}" method="POST" class="form rename-form">
+                                            {% csrf_token %}
+                                            <div class="form-group">
+                                                <input type="text" name="new_title" placeholder="Rename to..." required>
+                                                <button type="submit" class="btn btn-short sm-left-padding">Rename</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="row">
+            <div class="col">
+                <div class="content-wrapper">
+                    <div class="text-wrapper">
+                        <h1>Twisted Canvas</h1>
+                        <p>A whiteboard drawing program with twists</p>
+                    </div>
+                    <div class="btn-row">
+                        <a href="{% url 'login' %}" class="btn login-btn">
+                            Login
+                        </a>
+                        <a href="{% url 'register' %}" class="btn register-btn">
+                            Register
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="content-wrapper">
+                    <div class="landing-image">
+                        x
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    <script>
+        // new drawing button
+        const toggleCanvasBtn = document.getElementById("toggle-canvas-form");
+        const canvasFormOverlay = document.getElementById("canvas-form-overlay");
+        const toggleAddIcon = toggleCanvasBtn.querySelector(".toggle-add-icon");
+
+        toggleCanvasBtn.addEventListener("click", () => {
+            const isHidden = canvasFormOverlay.classList.toggle("hidden");
+
+            if (isHidden) {
+                // Dropdown is now hidden, remove rotation
+                toggleAddIcon.classList.remove("rotated");
+            } else {
+                // Dropdown is now shown, add rotation
+                toggleAddIcon.classList.add("rotated");
+            }
+        });
+
+        document.addEventListener("click", function(e) {
+            if (!canvasFormOverlay.contains(e.target) && !toggleCanvasBtn.contains(e.target)) {
+                canvasFormOverlay.classList.add("hidden");
+            }
+        });
+        document.addEventListener("DOMContentLoaded", () => {
+            const message = "{{ message|default:''|escapejs }}";
+            if (message) {
+            // Show the form overlay if there's a message
+            const canvasFormOverlay = document.getElementById("canvas-form-overlay");
+            const toggleAddIcon = document.querySelector("#toggle-canvas-form .toggle-add-icon");
+            canvasFormOverlay.classList.remove("hidden");
+            if (toggleAddIcon) {
+                toggleAddIcon.classList.add("rotated");
+            }
+            }
+        });
+        
+
+
+
+        // drawing overview edit button
+        document.querySelectorAll(".drawing-overview-toggle").forEach(toggle => {
+            toggle.addEventListener("click", (e) => {
+                e.stopPropagation(); // prevent outside click
+                const id = e.currentTarget.dataset.id;
+                const popup = document.getElementById("popup-actions-" + id);
+
+                if (popup) {
+                    popup.classList.toggle("hidden");
+
+                    // hide all other action popups
+                    document.querySelectorAll(".drawing-popup").forEach(p => {
+                        if (p !== popup) p.classList.add("hidden");
+                    });
+
+                    // hide all rename popups
+                    document.querySelectorAll(".drawing-rename-popup").forEach(p => {
+                        p.classList.add("hidden");
+                    });
+                }
+            });
+        });
+
+        // Hide on outside click
+        document.addEventListener("click", (e) => {
+            document.querySelectorAll(".drawing-popup, .drawing-rename-popup").forEach(popup => {
+                if (!popup.contains(e.target)) {
+                    popup.classList.add("hidden");
+                }
+            });
+        });
+
+        // rename button changes popup overlay
+        document.querySelectorAll('.trigger-rename').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const id = e.currentTarget.dataset.id;
+
+                const actionPopup = document.getElementById(`popup-actions-${id}`);
+                const renamePopup = document.getElementById(`popup-rename-${id}`);
+
+                // Hide action popup and show rename popup
+                if (actionPopup) actionPopup.classList.add('hidden');
+                if (renamePopup) renamePopup.classList.remove('hidden');
+            });
+        });
+    </script>
+
+{% endblock %}

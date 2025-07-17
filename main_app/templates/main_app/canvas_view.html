@@ -1,0 +1,48 @@
+{% extends "main_app/layout.html" %}
+{% load static %}
+
+{% block header_title %}{{ art.title }}{% endblock %}
+
+{% block body_class %}canvas-view{% endblock %}
+
+{% block top_right_button %}
+    <div class="share btn">
+        <p>Share</p>
+    </div>
+{% endblock %}
+
+{% block content %}
+    <div class="tool-wrapper">
+        <div class="tools">
+            <button id="draw-btn" aria-label="Draw mode" class="btn btn-active">
+                <span class="material-symbols-outlined">
+                    edit
+                </span>
+            </button>
+
+            <button id="erase-btn" aria-label="Erase mode" class="btn">
+                <span class="material-symbols-outlined">
+                    ink_eraser
+                </span>
+            </button>
+        </div>
+        <div class="color-picker-wrapper">
+            <div class="color-picker"></div>
+        </div>
+        <div class="color-picker-popup"></div>
+    </div>
+    <div class="canvas-container">
+        <div class="canvas-wrapper" id="canvas-wrapper">
+            <canvas id="canvas" width="{{ art.width }}" height="{{ art.height }}"></canvas>
+        </div>
+    </div>
+
+    <script>
+        const currentArtId = "{{ art.id }}";
+        const savedDataURL = "{{ art.data|default:''|escapejs }}";
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/pickr.min.js"></script>
+    <!-- <script src="https://unpkg.com/@panzoom/panzoom@4.6.0/dist/panzoom.min.js"></script> -->
+    <script type="module" src="{% static 'main_app/app.js' %}"></script>
+
+{% endblock %}
