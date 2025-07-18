@@ -482,7 +482,7 @@ input[type="number"] {
     left: 0;
     width: 100vw;
     height: calc(100vh - var(--navbar-height));
-    z-index: 0;
+    z-index: -1;
 }
 
 .canvas-wrapper {
@@ -491,6 +491,11 @@ input[type="number"] {
     padding: var(--padding-lg);
     display: flex;
     justify-content: center;
+}
+
+canvas {
+    image-rendering: pixelated;
+    background: white;
 }
 
 /* prevents vertical scrolling */

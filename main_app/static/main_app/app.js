@@ -1,5 +1,13 @@
+const canvasContainer = document.querySelector(".canvas-container");
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
+
+const viewportTransform = {
+    x: 0,
+    y: 0,
+    scale: 1
+}
+
 const drawBtn = document.getElementById("draw-btn");
 const eraseBtn = document.getElementById("erase-btn");
 
@@ -149,6 +157,7 @@ let drawing = false;
 
 // Start drawing for desktop devices
 canvas.addEventListener("mousedown", e => {
+    if (spacePressed) return; // don't draw when space is held
     drawing = true;
     setMode(currentTool);
     ctx.beginPath();
@@ -157,13 +166,15 @@ canvas.addEventListener("mousedown", e => {
 
 // Draw as mouse moves
 canvas.addEventListener("mousemove", e => {
-    if (!drawing) return;
+    if (!drawing || spacePressed) return;
     ctx.lineTo(e.offsetX, e.offsetY);
     ctx.stroke();
 });
 
 // Stop drawing
 canvas.addEventListener("mouseup", () => {
+    if (spacePressed) return;
+    
     drawing = false;
     saveCanvas();
     saveState();
@@ -215,6 +226,102 @@ canvas.addEventListener("touchend", (e) => {
 });
 
 
+let previousX = 0, previousY = 0
+let canvasOffsetX = 0, canvasOffsetY = 0
+let isDragging = false
+let spacePressed = false
+
+// Mouse move handler
+const onMouseMove = (e) => {
+    if (!isDragging || !spacePressed) return
+
+    const deltaX = e.clientX - previousX
+    const deltaY = e.clientY - previousY
+
+    canvasOffsetX += deltaX
+    canvasOffsetY += deltaY
+
+    canvas.style.transform = `translate(${canvasOffsetX}px, ${canvasOffsetY}px)`
+
+    previousX = e.clientX
+    previousY = e.clientY
+}
+
+// Mouse down initiates dragging if space is held
+canvasContainer.addEventListener('mousedown', (e) => {
+    if (!spacePressed) return
+
+    isDragging = true
+    previousX = e.clientX
+    previousY = e.clientY
+
+    document.addEventListener('mousemove', onMouseMove)
+    document.addEventListener('mouseup', onMouseUp)
+})
+
+const onMouseUp = () => {
+    isDragging = false
+    document.removeEventListener('mousemove', onMouseMove)
+    document.removeEventListener('mouseup', onMouseUp)
+}
+
+// Track spacebar key status
+document.addEventListener('keydown', (e) => {
+    if (e.code === 'Space') {
+        spacePressed = true
+        document.body.classList.add('space-dragging')
+        e.preventDefault()
+    }
+})
+
+document.addEventListener('keyup', (e) => {
+    if (e.code === 'Space') {
+        spacePressed = false
+        document.body.classList.remove('space-dragging')
+    }
+})
+
+// panning on mobile
+let isTouchPanning = false
+let lastTouchX = 0
+let lastTouchY = 0
+
+canvasContainer.addEventListener("touchstart", (e) => {
+	if (e.touches.length === 2) {
+		isTouchPanning = true
+
+		// Use the midpoint between two fingers
+		lastTouchX = (e.touches[0].clientX + e.touches[1].clientX) / 2
+		lastTouchY = (e.touches[0].clientY + e.touches[1].clientY) / 2
+	}
+}, { passive: false })
+
+canvasContainer.addEventListener("touchmove", (e) => {
+	if (isTouchPanning && e.touches.length === 2) {
+		e.preventDefault() // prevent scrolling
+
+		const currentX = (e.touches[0].clientX + e.touches[1].clientX) / 2
+		const currentY = (e.touches[0].clientY + e.touches[1].clientY) / 2
+
+		const deltaX = currentX - lastTouchX
+		const deltaY = currentY - lastTouchY
+
+		canvasOffsetX += deltaX
+		canvasOffsetY += deltaY
+
+		canvas.style.transform = `translate(${canvasOffsetX}px, ${canvasOffsetY}px)`
+
+		lastTouchX = currentX
+		lastTouchY = currentY
+	}
+}, { passive: false })
+
+canvasContainer.addEventListener("touchend", (e) => {
+	if (e.touches.length < 2) {
+		isTouchPanning = false
+	}
+})
+
 
 // send and save canvas data
 function saveCanvas() {
@@ -251,10 +358,6 @@ function getCookie(name) {
     }
     return cookieValue;
 }
-
-// // Auto-save every 5 seconds
-// setInterval(saveCanvas, 5000);
-
 
 
 // color picker pickr
