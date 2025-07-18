@@ -1,5 +1,5 @@
 # Twisted Canvas
-Twisted Drawing Web Application | CS50 Capstone Project
+Twisted Canvas Web Application | CS50 Capstone Project
 
 [YouTube Demo](https://www.example.com)
 
@@ -14,7 +14,13 @@ Drawings are automatically saved as image files through a lightweight SQLite3 ba
 
 ## File Structure
 
-## How to Run
+## Getting Started
+
+Python Pillow must be installed (used for export image scaling and saving)
+
+Run `python manage.py makemigrations` network to make migrations for the network app.
+
+Run `python manage.py migrate` to apply migrations to your database.
 
 ### Packages
 

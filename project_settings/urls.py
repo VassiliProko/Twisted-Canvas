@@ -26,6 +26,7 @@ urlpatterns = [
     path("save-art/", views.save_art, name="save_art"),
     path("rename-art/<int:art_id>/", views.rename_art, name="rename_art"),
     path("delete-art/<int:art_id>/", views.delete_art, name="delete_art"),
+    path("export-art/<int:art_id>/", views.export_art, name="export_art"),
     path("login/", views.login_view, name="login"),
     path("register/", views.register, name="register"),
     path("logout/", views.logout_view, name="logout"),

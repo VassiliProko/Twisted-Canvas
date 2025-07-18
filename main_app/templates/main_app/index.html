@@ -140,6 +140,7 @@
             }
         });
 
+        // hide form when clicking outside
         document.addEventListener("click", function(e) {
             if (!canvasFormOverlay.contains(e.target) && !toggleCanvasBtn.contains(e.target)) {
                 canvasFormOverlay.classList.add("hidden");

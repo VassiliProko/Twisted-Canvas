@@ -85,6 +85,14 @@ body, html {
     background-color: var(--color-primary-hover);
 }
 
+.btn-secondary {
+    border: var(--color-base-3) 2px solid;
+}
+
+.btn-secondary:hover {
+    border: var(--color-base-2-hover) 2px solid;
+}
+
 h1 {
     font-size: 2rem;
     margin: 0;
@@ -261,6 +269,7 @@ nav .btn {
     width: 100%;
     max-width: 375px;
     padding: var(--padding-md);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
 }
 
 .form-message {
@@ -307,6 +316,19 @@ nav .btn {
     gap: var(--padding-md);
 }
 
+/* Hide input arrows in Chrome, Safari, Edge */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* Hide input arrows in Firefox */
+input[type="number"] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+}
+
 /* new drawing form */
 .new-drawing-input {
     width: 65px !important;
@@ -327,7 +349,6 @@ nav .btn {
     margin-left: var(--padding-md);
     opacity: 1;
     transition: opacity 0.2s ease;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
     z-index: 10;
 }
 
@@ -484,4 +505,43 @@ body.canvas-view {
     gap: var(--padding-sm);
     margin-left: auto;
     pointer-events: auto;
+}
+
+/* export form */
+.export-form-overlay {
+    position: absolute;
+    opacity: 1;
+    transition: opacity 0.2s ease;
+    z-index: 15;
+    right: var(--padding-md);
+    top: calc(var(--navbar-height) + var(--padding-sm));
+}
+
+.scale-options {
+    display: flex;
+    gap: var(--padding-sm);
+}
+
+.input-with-label {
+    position: relative;
+    display: inline-flex;
+    justify-content: center;
+    width: 100px;
+}
+
+.input-with-label .prefix {
+    position: absolute;
+    left: 0.75em;
+    color: #555;
+    pointer-events: none;
+    font-weight: bold;
+}
+
+.dimension-inputs {
+    display: flex;
+    gap: var(--padding-sm);
+}
+
+.input-with-label input {
+    padding-left: 2em; /* leave space for the label */
 }

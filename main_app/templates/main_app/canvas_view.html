@@ -1,13 +1,52 @@
 {% extends "main_app/layout.html" %}
 {% load static %}
 
-{% block header_title %}{{ art.title }}{% endblock %}
+{% block header_title %}{{ drawing.title }}{% endblock %}
 
 {% block body_class %}canvas-view{% endblock %}
 
 {% block top_right_button %}
     <div class="export-toggle btn">
         <p>Export</p>
+    </div>
+    <div id="export-form-overlay" class="export-form-overlay hidden">
+        <div class="form-wrapper">
+            <h1>Export</h1>
+            {% if message %}
+                <div class="form-message">{{ message }}</div>
+            {% endif %}
+            <form action="{% url 'export_art' drawing.id %}" method="POST" class="form" novalidate>
+                {% csrf_token %}
+                <div class="form-inputs">
+                    <!-- scale presets -->
+                    <div class="form-group row">
+                        <p>Scale</p>
+                        <div class="scale-options row">
+                            <input type="hidden" name="scale" id="scale-value" value="1">
+
+                            <button type="button" class="scale-btn btn" data-scale="1">1x</button>
+                            <button type="button" class="scale-btn btn" data-scale="2">2x</button>
+                            <button type="button" class="scale-btn btn" data-scale="3">3x</button>
+                        </div>
+                    </div>
+                    <!-- Pixel dimensions -->
+                    <div class="dimension-inputs row">
+                        <div class="input-with-label form-group">
+                            <span class="prefix">W</span>
+                            <input type="number" id="export-width" placeholder="##" />
+                        </div>
+                        <div class="input-with-label form-group">
+                            <span class="prefix">H</span>
+                            <input type="number" id="export-height" placeholder="##">
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary" name="action" value="save">Save as JPG</button>
+                    <button type="submit" id="copy-btn" class="btn btn-secondary" name="action" value="copy">Copy to Clipboard</button>
+                </div>
+            </form>
+        </div>
     </div>
 {% endblock %}
 
@@ -48,16 +87,140 @@
     </div>
     <div class="canvas-container">
         <div class="canvas-wrapper" id="canvas-wrapper">
-            <canvas id="canvas" width="{{ art.width }}" height="{{ art.height }}"></canvas>
+            <canvas id="canvas" width="{{ drawing.width }}" height="{{ drawing.height }}"></canvas>
         </div>
     </div>
 
     <script>
-        const currentArtId = "{{ art.id }}";
-        const savedDataURL = "{{ art.data|default:''|escapejs }}";
+        const currentDrawingId = "{{ drawing.id }}";
+        const savedDataURL = "{{ drawing.data|default:''|escapejs }}";
     </script>
     <script src="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/pickr.min.js"></script>
     <!-- <script src="https://unpkg.com/@panzoom/panzoom@4.6.0/dist/panzoom.min.js"></script> -->
     <script type="module" src="{% static 'main_app/app.js' %}"></script>
+
+    <script>
+        // export
+        const toggleExportBtn = document.querySelector(".export-toggle");
+        const exportForm = document.getElementById("export-form-overlay");
+
+        const canvas = document.getElementById('canvas');
+        const baseWidth = canvas.width;
+        const baseHeight = canvas.height;
+
+        const scaleButtons = document.querySelectorAll('.scale-btn');
+        const scaleValue = document.getElementById('scale-value');
+
+        const widthInput = document.getElementById('export-width');
+        const heightInput = document.getElementById('export-height');
+
+        // show/hide export form
+        toggleExportBtn.addEventListener("click", () => {
+            exportForm.classList.toggle("hidden");
+        });
+        document.addEventListener("click", (e) => {
+            if (!exportForm.contains(e.target) && !toggleExportBtn.contains(e.target)) {
+                exportForm.classList.add("hidden");
+            }
+        });
+
+        // highlight selected button and update inputs
+        scaleButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const scale = parseFloat(btn.dataset.scale);
+                if (!isNaN(scale)) {
+                    scaleValue.value = scale;
+                    updateDimensionsFromScale(scale);
+                    // button styling
+                    scaleButtons.forEach(b => b.classList.remove('btn-active'));
+                    btn.classList.add('btn-active');
+                }
+
+            });
+        });
+
+        // Run default: 1x
+        const defaultBtn = Array.from(scaleButtons).find(btn => btn.dataset.scale === "1");
+        if (defaultBtn) {
+            defaultBtn.click(); // triggers event listener and updates UI
+        }
+
+        // change width and height px numbers
+        function updateDimensionsFromScale(scale) {
+            const w = Math.round(baseWidth * scale);
+            const h = Math.round(baseHeight * scale);
+            widthInput.value = w;
+            heightInput.value = h;
+        }
+
+        // width and height input sync (maintain aspect ratio)
+        widthInput.addEventListener('input', () => {
+            const newW = parseInt(widthInput.value);
+            if (!isNaN(newW) && newW > 0) {
+                const scale = newW / baseWidth;
+                const newH = Math.round(baseHeight * scale);
+                heightInput.value = newH;
+                scaleValue.value = scale;
+                clearActiveButtons();
+            }
+        });
+
+        heightInput.addEventListener('input', () => {
+            const newH = parseInt(heightInput.value);
+            if (!isNaN(newH) && newH > 0) {
+                const scale = newH / baseHeight;
+                const newW = Math.round(baseWidth * scale);
+                widthInput.value = newW;
+                scaleValue.value = scale;
+                clearActiveButtons();
+            }
+        });
+
+        // update px dimensions based on scale
+        function updateSizeFromScale(scale) {
+            const w = Math.round(baseWidth * scale);
+            const h = Math.round(baseHeight * scale);
+            widthInput.value = w;
+            heightInput.value = h;
+        }
+
+        // deselect all buttons
+        function clearActiveButtons() {
+            scaleButtons.forEach(btn => btn.classList.remove('btn-active'));
+        }
+
+        // copy to clipboard btn
+        document.getElementById("copy-btn").addEventListener("click", async () => {
+            // create temp canvas which is scaled
+            const scale = parseFloat(document.getElementById("scale-value").value) || 1;
+            const tempCanvas = document.createElement("canvas");
+            const tempCtx = tempCanvas.getContext("2d");
+
+            const baseCanvas = document.getElementById("canvas");
+
+            tempCanvas.width = baseCanvas.width * scale;
+            tempCanvas.height = baseCanvas.height * scale;
+
+            // Draw scaled image
+            tempCtx.imageSmoothingEnabled = false; // for sharp pixelated feel
+            tempCtx.drawImage(baseCanvas, 0, 0, tempCanvas.width, tempCanvas.height);
+
+            // Convert to blob and copy to clipboard
+            try {
+                const blob = await new Promise(resolve =>
+                    tempCanvas.toBlob(resolve, "image/png")
+                );
+
+                await navigator.clipboard.write([
+                    new ClipboardItem({ "image/png": blob })
+                ]);
+
+                alert("Image copied to clipboard!");
+            } catch (err) {
+                console.error("Copy failed:", err);
+                alert("Failed to copy image. Your browser might not support this feature.");
+            }
+        })
+    </script>
 
 {% endblock %}

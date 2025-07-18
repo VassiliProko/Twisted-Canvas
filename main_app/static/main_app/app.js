@@ -3,26 +3,6 @@ const ctx = canvas.getContext("2d");
 const drawBtn = document.getElementById("draw-btn");
 const eraseBtn = document.getElementById("erase-btn");
 
-// load existing data
-function loadCanvasImage(dataURL) {
-    // Always start with white background
-    ctx.fillStyle = "#ffffff";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    // If no saved data, stop here
-    if (!dataURL) return;
-
-    // Draw the saved image on top of white background
-    const img = new Image();
-    img.onload = () => {
-        ctx.drawImage(img, 0, 0);
-    };
-    img.src = dataURL;
-}
-
-loadCanvasImage(savedDataURL);
-
-
 
 let currentTool = "draw";  // default tool
 
@@ -76,12 +56,16 @@ function saveState() {
 }
 
 function undo() {
-    if (undoStack.length === 0) return;
+    if (undoStack.length <= 1) return;
 
     redoStack.push(canvas.toDataURL()); // save current before undo
 
-    const lastState = undoStack.pop();
-    restoreState(lastState);
+    // Remove current state from undo stack
+	undoStack.pop();
+
+	// Restore previous state (now last in undoStack)
+	const previousState = undoStack[undoStack.length - 1];
+	restoreState(previousState);
 }
 
 function redo() {
@@ -136,6 +120,31 @@ document.addEventListener('keydown', (e) => {
 });
 
 
+
+// load existing data
+function loadCanvasImage(dataURL) {
+    // Always start with white background
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // If no saved data, stop here
+    if (!dataURL) return;
+
+    // Draw the saved image on top of white background
+    const img = new Image();
+    img.onload = () => {
+        ctx.drawImage(img, 0, 0);
+
+        // save initial canvas to undo:
+        undoStack.push(canvas.toDataURL());
+    };
+    img.src = dataURL;
+}
+
+loadCanvasImage(savedDataURL);
+
+
+// brush & eraser
 let drawing = false;
 
 // Start drawing for desktop devices
@@ -160,9 +169,12 @@ canvas.addEventListener("mouseup", () => {
     saveState();
 });
 
-document.addEventListener("mouseout", (e) => {
-    if (!e.relatedTarget && !e.toElement) {
+// Global mouseup to catch mouseup outside canvas after drawing started
+document.addEventListener("mouseup", () => {
+    if (drawing) {  // Only save if drawing was active
         drawing = false;
+        saveCanvas();
+        saveState();
     }
 });
 
@@ -215,7 +227,7 @@ function saveCanvas() {
             "Content-Type": "application/json",
             "X-CSRFToken": getCookie("csrftoken")
         },
-        body: JSON.stringify({ data: dataURL, art_id: currentArtId })
+        body: JSON.stringify({ data: dataURL, art_id: currentDrawingId })
     })
     .then(response => response.json())
     .then(data => {
