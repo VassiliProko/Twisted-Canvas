@@ -12,43 +12,6 @@ const drawBtn = document.getElementById("draw-btn");
 const eraseBtn = document.getElementById("erase-btn");
 
 
-let currentTool = "draw";  // default tool
-
-function setActiveButton(activeBtn) {
-    // Remove active class from both
-    drawBtn.classList.remove("btn-active");
-    eraseBtn.classList.remove("btn-active");
-    // Add active class to the clicked button
-    activeBtn.classList.add("btn-active");
-}
-
-drawBtn.addEventListener("click", () => {
-    setActiveButton(drawBtn);
-    currentTool = "draw";
-});
-
-eraseBtn.addEventListener("click", () => {
-    setActiveButton(eraseBtn);
-    currentTool = "erase";
-});
-
-// get last used color or default to black
-let currentColor = localStorage.getItem('savedColor') || '#000000';
-
-function setMode(mode) {
-    if (mode === "erase") {
-        ctx.globalCompositeOperation = "source-over";  // normal drawing mode
-        ctx.strokeStyle = "#ffffff";  // white color for eraser
-        ctx.lineWidth = 10;  // Eraser size
-    } else {
-        ctx.globalCompositeOperation = "source-over";
-        ctx.strokeStyle = currentColor;
-        localStorage.setItem('savedColor', currentColor);
-        ctx.lineWidth = 2;   // Pencil size
-    }
-}
-
-
 // undo redo logic
 let undoStack = [];
 let redoStack = [];
@@ -97,6 +60,44 @@ function restoreState(dataURL) {
 // undo redo buttons
 document.querySelector('.undo-button').addEventListener('click', undo);
 document.querySelector('.redo-button').addEventListener('click', redo);
+
+
+// draw or erase
+let currentTool = "draw";  // default tool
+
+function setActiveButton(activeBtn) {
+    // Remove active class from both
+    drawBtn.classList.remove("btn-active");
+    eraseBtn.classList.remove("btn-active");
+    // Add active class to the clicked button
+    activeBtn.classList.add("btn-active");
+}
+
+drawBtn.addEventListener("click", () => {
+    setActiveButton(drawBtn);
+    currentTool = "draw";
+});
+
+eraseBtn.addEventListener("click", () => {
+    setActiveButton(eraseBtn);
+    currentTool = "erase";
+});
+
+// get last used color or default to black
+let currentColor = localStorage.getItem('savedColor') || '#000000';
+
+function setMode(mode) {
+    if (mode === "erase") {
+        ctx.globalCompositeOperation = "source-over";  // normal drawing mode
+        ctx.strokeStyle = "#ffffff";  // white color for eraser
+        ctx.lineWidth = 10;  // Eraser size
+    } else {
+        ctx.globalCompositeOperation = "source-over";
+        ctx.strokeStyle = currentColor;
+        localStorage.setItem('savedColor', currentColor);
+        ctx.lineWidth = 2;   // Pencil size
+    }
+}
 
 // keyboard shortcuts
 document.addEventListener('keydown', (e) => {
@@ -151,6 +152,16 @@ function loadCanvasImage(dataURL) {
 
 loadCanvasImage(savedDataURL);
 
+// Helper function to get correct canvas coords accounting for pan and zoom
+function getTransformedCoordinates(clientX, clientY) {
+	const rect = canvas.getBoundingClientRect();
+
+	// Convert screen coordinates to canvas coordinates accounting for pan and zoom
+	const x = (clientX - rect.left) / scale;
+	const y = (clientY - rect.top) / scale;
+
+	return { x, y };
+}
 
 // brush & eraser
 let drawing = false;
@@ -161,7 +172,7 @@ canvas.addEventListener("mousedown", e => {
     drawing = true;
     setMode(currentTool);
     ctx.beginPath();
-    ctx.moveTo(e.offsetX, e.offsetY);
+	ctx.moveTo(e.offsetX, e.offsetY);
 });
 
 // Draw as mouse moves
@@ -180,7 +191,7 @@ canvas.addEventListener("mouseup", () => {
     saveState();
 });
 
-// Global mouseup to catch mouseup outside canvas after drawing started
+// catch mouseup outside canvas after drawing started
 document.addEventListener("mouseup", () => {
     if (drawing) {  // Only save if drawing was active
         drawing = false;
@@ -196,13 +207,12 @@ window.addEventListener("blur", () => {
 
 // drawing mode on mobile devices
 canvas.addEventListener("touchstart", (e) => {
+    if (e.touches.length !== 1) return; // only draw on one finger
     e.preventDefault();
     drawing = true;
     setMode(currentTool);
     const touch = e.touches[0];
-    const rect = canvas.getBoundingClientRect();
-    const x = touch.clientX - rect.left;
-    const y = touch.clientY - rect.top;
+	const { x, y } = getTransformedCoordinates(touch.clientX, touch.clientY);
     ctx.beginPath();
     ctx.moveTo(x, y);
 });
@@ -211,9 +221,7 @@ canvas.addEventListener("touchmove", (e) => {
     if (!drawing) return;
     e.preventDefault();
     const touch = e.touches[0];
-    const rect = canvas.getBoundingClientRect();
-    const x = touch.clientX - rect.left;
-    const y = touch.clientY - rect.top;
+	const { x, y } = getTransformedCoordinates(touch.clientX, touch.clientY);
     ctx.lineTo(x, y);
     ctx.stroke();
 });
@@ -226,34 +234,91 @@ canvas.addEventListener("touchend", (e) => {
 });
 
 
-let previousX = 0, previousY = 0
-let canvasOffsetX = 0, canvasOffsetY = 0
-let isDragging = false
+// scale and zoom variables
+let scale = 1;
+const zoomStep = 0.75;
+const minScale = 0.5;
+const maxScale = 10; 
+let offsetX = 0;
+let offsetY = 0;
+let isDragging = false;
+let lastX = 0;
+let lastY = 0;
 let spacePressed = false
 
-// Mouse move handler
-const onMouseMove = (e) => {
-    if (!isDragging || !spacePressed) return
+// zoom in with buttons
+const zoomInBtn = document.getElementById("zoom-in");
+const zoomOutBtn = document.getElementById("zoom-out");
 
-    const deltaX = e.clientX - previousX
-    const deltaY = e.clientY - previousY
+zoomInBtn.addEventListener("click", () => {
+    scale = Math.min(maxScale, scale + zoomStep);
+    updateTransform();
+});
 
-    canvasOffsetX += deltaX
-    canvasOffsetY += deltaY
+zoomOutBtn.addEventListener("click", () => {
+    scale = Math.max(minScale, scale - zoomStep);
+    updateTransform();
+});
 
-    canvas.style.transform = `translate(${canvasOffsetX}px, ${canvasOffsetY}px)`
+// initial canvas scale (zoomed in)
+function setInitialCanvasScale() {
+	const containerRect = canvasContainer.getBoundingClientRect();
+	const maxHeight = containerRect.height * 0.8;
+	const maxWidth = containerRect.width * 0.8;
 
-    previousX = e.clientX
-    previousY = e.clientY
+	const scaleX = maxWidth / canvas.width;
+	const scaleY = maxHeight / canvas.height;
+
+	scale = Math.min(scaleX, scaleY);
+
+	updateTransform();
 }
+
+setInitialCanvasScale();
+
+// Zoom
+canvasContainer.addEventListener('wheel', (e) => {
+    e.preventDefault();
+
+    const zoomAmount = 0.2;
+    const direction = e.deltaY > 0 ? -1 : 1;
+    const newScale = Math.min(maxScale, Math.max(minScale, scale + direction * zoomAmount));
+
+    if (newScale === scale) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const cx = e.clientX - rect.left;
+    const cy = e.clientY - rect.top;
+
+    const zoomFactor = newScale / scale;
+    offsetX = cx - (cx - offsetX) * zoomFactor;
+    offsetY = cy - (cy - offsetY) * zoomFactor;
+
+    scale = newScale;
+    updateTransform();
+});
+
+// Pan (mouse)
+window.addEventListener('mousemove', (e) => {
+    if (!isDragging || !spacePressed) return;
+
+    const dx = e.clientX - lastX;
+    const dy = e.clientY - lastY;
+    offsetX += dx;
+    offsetY += dy;
+    lastX = e.clientX;
+    lastY = e.clientY;
+
+    updateTransform();
+});
 
 // Mouse down initiates dragging if space is held
 canvasContainer.addEventListener('mousedown', (e) => {
     if (!spacePressed) return
 
-    isDragging = true
-    previousX = e.clientX
-    previousY = e.clientY
+    isDragging = true;
+    lastX = e.clientX;
+    lastY = e.clientY;
 
     document.addEventListener('mousemove', onMouseMove)
     document.addEventListener('mouseup', onMouseUp)
@@ -281,47 +346,110 @@ document.addEventListener('keyup', (e) => {
     }
 })
 
-// panning on mobile
-let isTouchPanning = false
-let lastTouchX = 0
-let lastTouchY = 0
 
+window.addEventListener('mouseup', () => {
+	isDragging = false;
+});
+
+function updateTransform() {
+	canvas.style.transform = `translate(${offsetX}px, ${offsetY}px) scale(${scale})`;
+}
+
+// coordinate plane system
+let originX = 0;
+let originY = 0;
+
+// Mouse move handler
+const onMouseMove = (e) => {
+    if (!isDragging || !spacePressed) return
+
+    const dx = e.clientX - lastX;
+    const dy = e.clientY - lastY;
+
+    offsetX += dx;
+    offsetY += dy;
+
+    lastX = e.clientX;
+    lastY = e.clientY;
+
+    updateTransform();
+}
+
+let isTouchPanning = false;
+let lastTouchX = 0;
+let lastTouchY = 0;
+let lastTouchDistance = 0;
+
+// Utility to get distance between two touch points
+function getDistance(touches) {
+    const dx = touches[0].clientX - touches[1].clientX;
+    const dy = touches[0].clientY - touches[1].clientY;
+    return Math.sqrt(dx * dx + dy * dy);
+}
+
+// Touch start
 canvasContainer.addEventListener("touchstart", (e) => {
-	if (e.touches.length === 2) {
-		isTouchPanning = true
+    if (e.touches.length === 2) {
+        isTouchPanning = true;
 
-		// Use the midpoint between two fingers
-		lastTouchX = (e.touches[0].clientX + e.touches[1].clientX) / 2
-		lastTouchY = (e.touches[0].clientY + e.touches[1].clientY) / 2
-	}
-}, { passive: false })
+        // Midpoint between two fingers
+        lastTouchX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+        lastTouchY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
 
+        // Initial distance between fingers for zoom detection
+        lastTouchDistance = getDistance(e.touches);
+    }
+}, { passive: false });
+
+// Touch move
 canvasContainer.addEventListener("touchmove", (e) => {
-	if (isTouchPanning && e.touches.length === 2) {
-		e.preventDefault() // prevent scrolling
+    if (isTouchPanning && e.touches.length === 2) {
+        e.preventDefault();
 
-		const currentX = (e.touches[0].clientX + e.touches[1].clientX) / 2
-		const currentY = (e.touches[0].clientY + e.touches[1].clientY) / 2
+        const currentX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+        const currentY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
 
-		const deltaX = currentX - lastTouchX
-		const deltaY = currentY - lastTouchY
+        const deltaX = currentX - lastTouchX;
+        const deltaY = currentY - lastTouchY;
 
-		canvasOffsetX += deltaX
-		canvasOffsetY += deltaY
+        // Update offsets for panning
+        offsetX += deltaX;
+        offsetY += deltaY;
 
-		canvas.style.transform = `translate(${canvasOffsetX}px, ${canvasOffsetY}px)`
+        // Detect pinch zoom
+        const currentDistance = getDistance(e.touches);
+        const zoomFactor = currentDistance / lastTouchDistance;
 
-		lastTouchX = currentX
-		lastTouchY = currentY
-	}
-}, { passive: false })
+        // Update scale within limits
+        const newScale = Math.min(maxScale, Math.max(minScale, scale * zoomFactor));
+        
+        // Adjust offsets to zoom centered on midpoint between fingers
+        const rect = canvas.getBoundingClientRect();
+        const cx = currentX - rect.left;
+        const cy = currentY - rect.top;
 
+        const scaleChange = newScale / scale;
+
+        offsetX = cx - (cx - offsetX) * scaleChange;
+        offsetY = cy - (cy - offsetY) * scaleChange;
+
+        scale = newScale;
+
+        // Update last variables for next move
+        lastTouchX = currentX;
+        lastTouchY = currentY;
+        lastTouchDistance = currentDistance;
+
+        updateTransform();
+    }
+}, { passive: false });
+
+// Touch end
 canvasContainer.addEventListener("touchend", (e) => {
-	if (e.touches.length < 2) {
-		isTouchPanning = false
-	}
-})
-
+    if (e.touches.length < 2) {
+        isTouchPanning = false;
+    }
+});
 
 // send and save canvas data
 function saveCanvas() {
