@@ -53,7 +53,20 @@
 {% block content %}
     <div class="tool-wrapper">
         <div class="row">
-            <p>twist</p>
+            <div class="twist-wrapper">
+                <div class="twist-timer">
+                    <svg class="ring" width="72" height="72">
+                        <circle class="progress" cx="36" cy="36" r="25" />
+                    </svg>
+                    <p id="twist-timer-num" class="micro-5-regular">15</p>
+                </div>
+                <div class="twist">
+                    <span class="material-symbols-outlined">
+                    storm
+                    </span>
+                    <p id="twist-name">Twist</p>
+                </div>
+            </div>
             <div class="undo-redo-wrapper">
                 <button class="btn undo-button">
                     <span class="material-symbols-outlined">
@@ -67,19 +80,30 @@
                 </button>
             </div>
         </div>
-        <div class="tools">
-            <button id="draw-btn" aria-label="Draw mode" class="btn btn-active">
-                <span class="material-symbols-outlined">
-                    edit
-                </span>
-            </button>
+        <div class="tools-section">
+            <div class="tools">
+                <button id="draw-btn" aria-label="Draw mode" class="btn btn-active">
+                    <span class="material-symbols-outlined">
+                        edit
+                    </span>
+                </button>
 
-            <button id="erase-btn" aria-label="Erase mode" class="btn">
-                <span class="material-symbols-outlined">
-                    ink_eraser
-                </span>
-            </button>
+                <button id="erase-btn" aria-label="Erase mode" class="btn">
+                    <span class="material-symbols-outlined">
+                        ink_eraser
+                    </span>
+                </button>
+            </div>
+            <div class="tool-range-wrapper">
+                <div class="tool-range draw-range hidden">
+                    <input id="draw-size" class="tool-slider" type="range" min="1" max="50" value="10" style="writing-mode: vertical-lr; direction: rtl">
+                </div>
+                <div class="tool-range erase-range hidden">
+                    <input id="erase-size" class="tool-slider" type="range" min="1" max="50" value="10" style="writing-mode: vertical-lr; direction: rtl">
+                </div>
+            </div>
         </div>
+       
         <div class="color-picker-wrapper">
             <div class="color-picker"></div>
         </div>
@@ -103,14 +127,13 @@
         </div>
     </div>
 
-    <script>
-        const currentDrawingId = "{{ drawing.id }}";
-        const savedDataURL = "{{ drawing.data|default:''|escapejs }}";
-    </script>
     <script src="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/pickr.min.js"></script>
     <script type="module" src="{% static 'main_app/app.js' %}"></script>
 
     <script>
+        const currentDrawingId = "{{ drawing.id }}";
+        const savedDataURL = "{{ drawing.data|default:''|escapejs }}";
+
         // export
         const toggleExportBtn = document.querySelector(".export-toggle");
         const exportForm = document.getElementById("export-form-overlay");

@@ -1,6 +1,7 @@
 const canvasContainer = document.querySelector(".canvas-container");
+const canvasWrapper = document.querySelector(".canvas-wrapper");
 const canvas = document.getElementById("canvas");
-const ctx = canvas.getContext("2d");
+const ctx = canvas.getContext("2d", { willReadFrequently: true });
 
 const viewportTransform = {
     x: 0,
@@ -11,6 +12,58 @@ const viewportTransform = {
 const drawBtn = document.getElementById("draw-btn");
 const eraseBtn = document.getElementById("erase-btn");
 
+let drawSize = 10;
+let eraseSize = 10;
+const drawSlider = document.getElementById("draw-size");
+const eraseSlider = document.getElementById("erase-size");
+
+
+drawSlider.addEventListener("input", () => {
+    drawSize = parseInt(drawSlider.value);
+    if (currentTool === "draw") {
+        ctx.lineWidth = drawSize;
+    }
+});
+
+eraseSlider.addEventListener("input", () => {
+    eraseSize = parseInt(eraseSlider.value);
+    if (currentTool === "erase") {
+        ctx.lineWidth = eraseSize;
+    }
+});
+
+let activeTool = null;
+let isRangeVisible = false;
+
+function toggleTool(tool) {
+    if (activeTool === tool) {
+        // Already active, so toggle slider
+        isRangeVisible = !isRangeVisible;
+        updateSliderVisibility();
+    } else {
+        setActiveButton(tool === drawBtn ? drawBtn : eraseBtn);
+        currentTool = tool === drawBtn ? "draw" : "erase";
+        activeTool = tool;
+        isRangeVisible = false;
+        updateSliderVisibility();
+    }
+}
+
+function updateSliderVisibility() {
+    const drawRange = document.querySelector(".draw-range");
+    const eraseRange = document.querySelector(".erase-range");
+
+    drawRange.classList.add("hidden");
+    eraseRange.classList.add("hidden");
+
+    if (isRangeVisible) {
+        if (activeTool === drawBtn) {
+            drawRange.classList.remove("hidden");
+        } else if (activeTool === eraseBtn) {
+            eraseRange.classList.remove("hidden");
+        }
+    }
+}
 
 // undo redo logic
 let undoStack = [];
@@ -74,13 +127,11 @@ function setActiveButton(activeBtn) {
 }
 
 drawBtn.addEventListener("click", () => {
-    setActiveButton(drawBtn);
-    currentTool = "draw";
+    toggleTool(drawBtn);
 });
 
 eraseBtn.addEventListener("click", () => {
-    setActiveButton(eraseBtn);
-    currentTool = "erase";
+    toggleTool(eraseBtn);
 });
 
 // get last used color or default to black
@@ -90,13 +141,14 @@ function setMode(mode) {
     if (mode === "erase") {
         ctx.globalCompositeOperation = "source-over";  // normal drawing mode
         ctx.strokeStyle = "#ffffff";  // white color for eraser
-        ctx.lineWidth = 10;  // Eraser size
+        ctx.lineWidth = eraseSize;
     } else {
         ctx.globalCompositeOperation = "source-over";
         ctx.strokeStyle = currentColor;
         localStorage.setItem('savedColor', currentColor);
-        ctx.lineWidth = 2;   // Pencil size
+        ctx.lineWidth = drawSize;
     }
+    updateSliderVisibility();
 }
 
 // keyboard shortcuts
@@ -538,3 +590,96 @@ pickr.on('change', (color) => {
     const rgbaColor = color.toRGBA().toString();
     currentColor = rgbaColor;  // store current pickr color
 });
+
+
+// twist logic
+const twistName = document.getElementById("twist-name");
+let twistTime = 5; // seconds
+const twistTimer = document.getElementById("twist-timer-num");
+const progressRing = document.querySelector(".ring .progress");
+const fullDash = 2 * Math.PI * 25;
+
+const twists = [
+    applyGrayscale,
+    applyHorizontalFlip,
+    applyVerticalFlip,
+    applyRotate45,
+    applyRotate_45,
+    applyHueRotate,
+    applyInvert,
+    applySepia
+]
+
+function applyGrayscale() {
+	canvas.style.filter = "grayscale(100%)";
+    twistName.textContent = "Grayscale";
+}
+
+function applyHorizontalFlip() {
+	canvasWrapper.style.transform = "scaleX(-1)";
+    twistName.textContent = "Horizontal Flip";
+}
+
+function applyVerticalFlip() {
+	canvasWrapper.style.transform = "scaleY(-1)";
+    twistName.textContent = "Vertical Flip";
+}
+
+function applyRotate45() {
+    canvasWrapper.style.transform = "rotate(45deg)";
+    twistName.textContent = "Rotate 45°";
+}
+
+function applyRotate_45() {
+    canvasWrapper.style.transform = "rotate(-45deg)";
+    twistName.textContent = "Rotate -45°";
+}
+
+function applyHueRotate() {
+	canvas.style.filter = "hue-rotate(45deg)";
+    twistName.textContent = "Hue Shift";
+}
+
+function applyInvert() {
+	canvas.style.filter = "invert(100%)";
+    twistName.textContent = "Invert";
+}
+
+function applySepia() {
+	canvas.style.filter = "sepia(100%)";
+    twistName.textContent = "Sepia";
+}
+
+function triggerTwist() {
+    console.log("twist triggered")
+    canvasWrapper.style.transform = "";
+    canvas.style.filter = "";
+    const randomIndex = Math.floor(Math.random() * twists.length);
+	const selectedTwist = twists[randomIndex];
+    selectedTwist();
+}
+
+function updateRing(timeLeft) {
+    const progress = fullDash * (timeLeft / 15);
+    progressRing.style.strokeDashoffset = fullDash - progress;
+}
+
+// count down and trigger twist at the end
+function startTwistTimer() {
+    twistTimer.textContent = twistTime;
+    
+    const interval = setInterval(() => {
+        twistTime--;
+
+        if (twistTime < 0) {
+            triggerTwist();
+            twistTime = 5;
+        }
+
+        twistTimer.textContent = twistTime;
+        updateRing(twistTime);
+    }, 1000);
+}
+
+// startTwistTimer();
+applySepia();

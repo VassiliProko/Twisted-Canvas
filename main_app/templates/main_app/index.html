@@ -1,12 +1,7 @@
 {% extends "main_app/layout.html" %}
 
 {% block top_right_button %}
-    <div class="settings btn">
-        <div class="pfp">{{ user.username|slice:":1" }}</div>
-        <span class="material-symbols-outlined">
-            keyboard_arrow_down
-        </span>
-    </div>
+    <p class="muted">{{ user.username }}</p>
 {% endblock %}
 
 {% block content %}

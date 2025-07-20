@@ -181,28 +181,6 @@ nav .btn {
     padding: var(--padding-sm);
 }
 
-.settings {
-    width: fit-content;
-    height: fit-content;
-    display: flex;
-    padding: 0 !important;
-    align-items: center;
-    gap: 0;
-    
-    border-radius: var(--border-radius-lg);
-}
-
-.pfp {
-    background-color: var(--color-alternative);
-    border-radius: var(--border-radius-lg);
-    width: 30px;
-    height: 30px;
-    color: var(--color-light);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
 .header-title {
     color: var(--color-light);
     left: 50%;
@@ -429,6 +407,11 @@ input[type="number"] {
     height: calc(100% - (var(--padding-md) + var(--padding-sm) + var(--navbar-height)));
 }
 
+.tools-section {
+    display: flex;
+    gap: var(--padding-md);
+}
+
 .tools {
     display: flex;
     flex-direction: column;
@@ -437,8 +420,29 @@ input[type="number"] {
     width: fit-content;
     background-color: var(--color-base-2);
     border-radius: var(--border-radius-md);
+    height: fit-content;
     pointer-events: auto;
 }
+
+.tool-range-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.tool-range {
+    background-color: var(--color-base-2);
+    padding: var(--padding-sm);
+    border-radius: var(--padding-md);
+    width: fit-content;
+    position: absolute;
+    pointer-events: auto;
+}
+
+.tool-range input {
+    width: 1.5rem;
+}
+
+
 
 .color-picker-wrapper {
     padding: var(--padding-sm);
@@ -453,8 +457,8 @@ input[type="number"] {
 }
 
 .pcr-button {
-    width: 20px !important;
-    height: 20px !important;
+    width: 30px !important;
+    height: 30px !important;
     background: var(--color-base-2) !important;
     aspect-ratio: 1 / 1;
     border-radius: var(--border-radius-lg) !important;
@@ -511,6 +515,7 @@ body.canvas-view {
     gap: var(--padding-sm);
     margin-left: auto;
     pointer-events: auto;
+    height: fit-content;
 }
 
 /* export form */
@@ -562,4 +567,52 @@ body.canvas-view {
     pointer-events: auto;
     position: absolute;
     bottom: 0;
+}
+
+/* twist */
+.twist-wrapper {
+    display: flex;
+    gap: var(--padding-md);
+}
+
+.twist-timer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 72px;
+    height: 72px;
+    background-color: var(--color-base-2);
+    border-radius: var(--border-radius-lg);
+}
+
+.twist-timer svg {
+    transform: rotate(-90deg);
+    position: absolute;
+}
+
+#twist-timer-num {
+    font-family: "Micro 5", sans-serif;
+    font-size: 2.5rem;
+}
+
+.twist {
+    display: flex;
+    gap: var(--padding-sm);
+    background-color: var(--color-base-2);
+    border-radius: var(--border-radius-sm);
+    padding: var(--padding-sm);
+    padding-right: var(--padding-md);
+    height: fit-content;
+}
+
+.ring circle {
+    fill: none;
+    stroke-width: 2;
+}
+
+.ring .progress {
+    stroke: var(--color-primary);
+    stroke-dasharray: calc((2 * 3.14159 * 25)); /* 2 * π * 25 (circumference) */
+    stroke-dashoffset: 0;
+    transition: stroke-dashoffset 1s linear;
 }
