@@ -233,7 +233,26 @@ nav .btn {
 }
 
 .landing-image {
-    max-width: max(90%, 40vw);
+    max-width: 100%;
+}
+
+.landing-image img {
+    width: 100%;
+    height: auto;
+    border-radius: var(--border-radius-md);
+    box-shadow: var(--drop-shadow);
+}
+
+.logo-landing {
+    max-width: 3rem;
+    height: auto;
+    border-radius: var(--border-radius-md);
+}
+
+.landing-heading-wrapper {
+    display: flex;
+    gap: var(--padding-md);
+    align-items: flex-end;
 }
 
 /* form */
@@ -247,7 +266,7 @@ nav .btn {
     width: 100%;
     max-width: 375px;
     padding: var(--padding-md);
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    box-shadow: var(--drop-shadow);
 }
 
 .form-message {
@@ -343,6 +362,12 @@ input[type="number"] {
 	grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
 	gap: 1rem;
     width: 100%;
+}
+
+@media (min-width: 1024px) {
+    .drawings-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
 }
 
 .drawing-overview {

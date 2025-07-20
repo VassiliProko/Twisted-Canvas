@@ -1,50 +1,88 @@
 # Twisted Canvas
 Twisted Canvas Web Application | CS50 Capstone Project
 
-[YouTube Demo](https://www.example.com)
+[YouTube Demo](https://www.youtube.com/watch?v=UQ-MXKcePGk)
 
-![Twisted Canvas Preview](preview.jpg)
+![Twisted Canvas Preview](/main_app/static/main_app/preview.jpg)
 
 ## Overview
 Twisted Canvas is a dynamic web-based drawing application that challenges artists with various "twists" every 15 seconds. These twists include grayscale filters, horizontal or vertical flips, and more which introduce playful chaos into the creative process. By forcing users to adapt their style in real time, Twisted Canvas turns drawing into a fun (or not), unique digital drawing experience that promotes creativity and spontaneity.
 
-Drawings are automatically saved as image files through a lightweight SQLite3 backend, ensuring progress is never lost. Designed to be fully responsive, the app functions smoothly across all modern screen sizes, offering an engaging experience on both desktop and mobile devices.
+Twisted Canvas builds upon the general Django framework, utilizing Django's provided user model and an art model to power the backend, while javascript is extensively used in the frontend. Drawings are automatically saved as image files, and the web application is desktop and mobile responsive.
 
 ## Distinctiveness and Complexity
+Twisted Canvas is distinct in both its concept and technical execution. Unlike typical drawing tools that prioritize stability and precision, Twisted Canvas introduces unpredictable, time-based challenges via CSS filters and transformations. This “twist” system creates a game-like layer on top of a traditional canvas app, pushing users to think creatively under constraints, a concept rarely seen in digital art tools or projects in the CS50 course.
 
-Twisted Canvas dives into HTML Canvas, CSS filters and utlizies other features (color picking, interactivity with pan and zoom) not covered in depth in the CS50 Web Programming with Javascript and Python Course. It builds upon the general Django framework provided, utilizing Django's provided user model and an art model to power the backend of this web application. 
+On the technical side, the frontend required throrough testing to ensure smooth interactions between tools like the drawer/eraser, color picker*, brush size, pan/zoom, and more. These features were implemented using vanilla JavaScript, providing full control over canvas state and interactions.
+
+Additionally, unlike most course projects that rely on Bootstrap for styling, Twisted Canvas was styled entirely from scratch using modern CSS techniques such as Flexbox.
+
+### Technologies
+Twisted Canvas builds upons the courses content utilizing core technologies such as:
+- **HTML5 Canvas** - supports a dynamic web drawing experience
+- **CSS Filters** - applies real-time visual effects to the canvas
+- **Javascript (vanilla)** - handles interactivity, version state control, and more
+- **Django Framework** - provides backend structure, user authentication, routing, and more
+
+## Design
+Twisted Canvas was designed with a minimalistic dark mode user interface to highlight the twisted drawing experience. 
+### Twists
+- Grayscale
+- Horizontal Flip
+- Vertical Flip
+- Rotate 45°
+- Rotate -45°
+- Hue Shift
+- Invert
+- Sepia
 
 ## File Structure
+Overview of key files included in my Django project structure:
 
-## Getting Started
+- `main_app` - main application directory
+    - `static/main_app` - contains static content
+        - `app.js` - main script run in `canvas_view.html` template
+        - `favicon.png` - favicon logo
+        - `preview.jpg` - desktop screenshot preview used on landing page
+        - `styles.css` - css styling
+    - `templates/main_app` - contains html templates
+        - `canvas_view.html` - drawing template
+        - `index.html` - home template
+        - `layout.html` - layout template
+        - `login.html` - login template
+        - `register.html` - register template
+    - `admin.py` - art data avaliable for admin view
+    - `models.py` - additional art model to save artwork tied to user
+    - `urls.py` - all application URLs
+    - `views.py` - handles all view requests
+- `project_settings` - project directory
 
-Python Pillow must be installed (used for export image scaling and saving)
+## Installation
 
-Run `python manage.py makemigrations` network to make migrations for the network app.
+Run `pip install -r requirements.txt` to install dependencies.
+
+Run `python manage.py makemigrations` to make migrations for the network app.
 
 Run `python manage.py migrate` to apply migrations to your database.
 
-### Packages
+Run `python manage.py runserver` to run the server.
 
-simonwep pickr
+## Packages
+Twisted Canvas utilizes some important design related packages to make the app possible
 
-google material icons
+[**simonwep - pickr**](https://github.com/Simonwep/pickr?tab=readme-ov-file)*
+- a beautiful responsive color picker tool, replacing the default form color input popup
 
+[**google material icons**](https://fonts.google.com/icons?icon.set=Material+Symbols&icon.size=24&icon.color=%23e3e3e3&icon.platform=web)
+- clean UI icons used throughout the app used for consistency and readability
 
+## Challenges & Considerations
+Implementing the panning and zooming ability was rough as the initial plan revolved around transforming the actual canvas' scale which didn't align and update well with the coordinate system of the drawing/eraser tools. Ultimately, a fixed HTML canvas is used with CSS transformations to provide panning and zoom functionality. 
 
-In this project, you are asked to build a web application of your own. The nature of the application is up to you, subject to a few requirements:
+As the canvas doesn't include a layer system the history state management is handled via simply saving the entire canvas state. For a more lightweight and production appropiate build, stroke based data could be implemented instead.  
 
-Your web application must be sufficiently distinct from the other projects in this course (and, in addition, may not be based on the old CS50W Pizza project), and more complex than those.
-A project that appears to be a social network is a priori deemed by the staff to be indistinct from Project 4, and should not be submitted; it will be rejected.
-A project that appears to be an e-commerce site is strongly suspected to be indistinct from Project 2, and your README.md file should be very clear as to why it’s not. Failing that, it should not be submitted; it will be rejected.
-Your web application must utilize Django (including at least one model) on the back-end and JavaScript on the front-end.
-Your web application must be mobile-responsive.
-The most common cause for failure of the final project is not spending enough effort on this next instruction. Read it completely. Your README.md file should be minimally multiple paragraphs in length, and should provide a comprehensive documentation of what you did and, if applicable, why you did it. Ensure you allocate sufficient time and energy to writing a README.md that you are proud of and that documents your project thoroughly, and that distinguishes this project from others in the course and defends its complexity. Simply saying, effectively, “It’s different from the other projects and it was complex to build.” is not at all sufficient justification of distinctiveness and complexity. This section alone should consist of several paragraphs, before you even begin to talk about the documentation of your project.
+## Reflection
 
-In a README.md in your project’s main directory, include a writeup describing your project, and specifically your file MUST include all of the following:
-Under its own header within the README called Distinctiveness and Complexity: Why you believe your project satisfies the distinctiveness and complexity requirements, mentioned above.
-What’s contained in each file you created.
-How to run your application.
-Any other additional information the staff should know about your project.
-If you’ve added any Python packages that need to be installed in order to run your web application, be sure to add them to a requirements.txt file!
-Though there is not a hard requirement here, a README.md in the neighborhood of 500 words is likely a solid target, assuming the other requirements are also satisfied.
+Overall this full stack capstone project provided a rewarding product development experience from designing wireframes in figma to fully implementing the web application's frontend and backend with Python and Javascript. 
+
+A component based file system or javascript framework could have provided a more modular and scalable layout for the frontend. Despite this, Twisted Canvas successfully combines a minimalist UI, responsive design for both desktop and mobile, and a functional backend into a cohesive and very playful creative tool.
