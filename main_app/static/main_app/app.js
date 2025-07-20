@@ -79,6 +79,8 @@ function saveState() {
     console.log("Saved state. Undo stack size:", undoStack.length);
 }
 
+saveState();
+
 function undo() {
     if (undoStack.length <= 1) return;
 
