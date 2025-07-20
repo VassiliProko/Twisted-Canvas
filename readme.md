@@ -6,11 +6,13 @@ Twisted Canvas Web Application | CS50 Capstone Project
 ![Twisted Canvas Preview](preview.jpg)
 
 ## Overview
-Twisted Canvas is a dynamic web-based drawing application that challenges artists with various "twists" every 15 seconds. These twists include grayscale filters, horizontal or vertical flips, and canvas rotations which introduce playful chaos into the creative process. By forcing users to adapt their style in real time, Twisted Canvas turns drawing into a fun (or not), unique gamified experience that promotes creativity and spontaneity.
+Twisted Canvas is a dynamic web-based drawing application that challenges artists with various "twists" every 15 seconds. These twists include grayscale filters, horizontal or vertical flips, and more which introduce playful chaos into the creative process. By forcing users to adapt their style in real time, Twisted Canvas turns drawing into a fun (or not), unique digital drawing experience that promotes creativity and spontaneity.
 
 Drawings are automatically saved as image files through a lightweight SQLite3 backend, ensuring progress is never lost. Designed to be fully responsive, the app functions smoothly across all modern screen sizes, offering an engaging experience on both desktop and mobile devices.
 
 ## Distinctiveness and Complexity
+
+Twisted Canvas dives into HTML Canvas, CSS filters and utlizies other features (color picking, interactivity with pan and zoom) not covered in depth in the CS50 Web Programming with Javascript and Python Course. It builds upon the general Django framework provided, utilizing Django's provided user model and an art model to power the backend of this web application. 
 
 ## File Structure
 

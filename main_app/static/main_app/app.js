@@ -85,11 +85,11 @@ function undo() {
     redoStack.push(canvas.toDataURL()); // save current before undo
 
     // Remove current state from undo stack
-	undoStack.pop();
+    undoStack.pop();
 
-	// Restore previous state (now last in undoStack)
-	const previousState = undoStack[undoStack.length - 1];
-	restoreState(previousState);
+    // Restore previous state (now last in undoStack)
+    const previousState = undoStack[undoStack.length - 1];
+    restoreState(previousState);
 }
 
 function redo() {
@@ -314,16 +314,16 @@ zoomOutBtn.addEventListener("click", () => {
 
 // initial canvas scale (zoomed in)
 function setInitialCanvasScale() {
-	const containerRect = canvasContainer.getBoundingClientRect();
-	const maxHeight = containerRect.height * 0.8;
-	const maxWidth = containerRect.width * 0.8;
+    const containerRect = canvasContainer.getBoundingClientRect();
+    const maxHeight = containerRect.height * 0.8;
+    const maxWidth = containerRect.width * 0.8;
 
-	const scaleX = maxWidth / canvas.width;
-	const scaleY = maxHeight / canvas.height;
+    const scaleX = maxWidth / canvas.width;
+    const scaleY = maxHeight / canvas.height;
 
-	scale = Math.min(scaleX, scaleY);
+    scale = Math.min(scaleX, scaleY);
 
-	updateTransform();
+    updateTransform();
 }
 
 setInitialCanvasScale();
@@ -400,11 +400,11 @@ document.addEventListener('keyup', (e) => {
 
 
 window.addEventListener('mouseup', () => {
-	isDragging = false;
+    isDragging = false;
 });
 
 function updateTransform() {
-	canvas.style.transform = `translate(${offsetX}px, ${offsetY}px) scale(${scale})`;
+    canvas.style.transform = `translate(${offsetX}px, ${offsetY}px) scale(${scale})`;
 }
 
 // coordinate plane system
@@ -594,7 +594,7 @@ pickr.on('change', (color) => {
 
 // twist logic
 const twistName = document.getElementById("twist-name");
-let twistTime = 5; // seconds
+let twistTime = 15; // seconds
 const twistTimer = document.getElementById("twist-timer-num");
 const progressRing = document.querySelector(".ring .progress");
 const fullDash = 2 * Math.PI * 25;
@@ -673,7 +673,7 @@ function startTwistTimer() {
 
         if (twistTime < 0) {
             triggerTwist();
-            twistTime = 5;
+            twistTime = 15;
         }
 
         twistTimer.textContent = twistTime;
@@ -681,5 +681,4 @@ function startTwistTimer() {
     }, 1000);
 }
 
-// startTwistTimer();
-applySepia();
+startTwistTimer();
