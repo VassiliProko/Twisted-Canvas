@@ -1,1 +1,8 @@
 db.sqlite3
+.DS_Store
+*.log
+__pycache__/
+*.pyc
+main_app/migrations/
+!main_app/migrations/__init__.py
+venv
